@@ -1,15 +1,19 @@
 from flask import Flask, request, jsonify
 from transformers import AutoModel, AutoTokenizer
 import torch
+from flask_allowedhosts import limit_hosts
+
 
 app = Flask(__name__)
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost','791b-111-119-49-197.ngrok-free.app']
+
 
 # Load the Nepali sentence similarity model
 model_name = "l3cube-pune/indic-sentence-similarity-sbert"
 model = AutoModel.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-# Load your array of sentences
 sentence_array = [
     "घर/जग्गा नामसारीको सिफारिस गरी पाऊँ",
     "मोही लगत कट्टाको सिफारिस पाउं",
@@ -67,6 +71,7 @@ sentence_array = [
 ]
 
 @app.route('/check_similarity', methods=['POST'])
+@limit_hosts(allowed_hosts=ALLOWED_HOSTS)
 def check_similarity():
     try:
         #get data from form data
