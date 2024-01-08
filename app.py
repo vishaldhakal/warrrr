@@ -1,12 +1,9 @@
 from flask import Flask, request, jsonify
 from transformers import AutoModel, AutoTokenizer
 import torch
-from flask_allowedhosts import limit_hosts
 
 
 app = Flask(__name__)
-
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost','791b-111-119-49-197.ngrok-free.app']
 
 
 # Load the Nepali sentence similarity model
@@ -71,7 +68,6 @@ sentence_array = [
 ]
 
 @app.route('/check_similarity', methods=['POST'])
-@limit_hosts(allowed_hosts=ALLOWED_HOSTS)
 def check_similarity():
     try:
         #get data from form data
