@@ -1,15 +1,11 @@
 from flask import Flask, request, jsonify
-from transformers import AutoModel, AutoTokenizer
+from sentence_transformers import SentenceTransformer, util
 import torch
 
 
+
+
 app = Flask(__name__)
-
-
-# Load the Nepali sentence similarity model
-model_name = "l3cube-pune/indic-sentence-similarity-sbert"
-model = AutoModel.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 sentence_array = [
     "घर/जग्गा नामसारीको सिफारिस गरी पाऊँ",
@@ -67,43 +63,32 @@ sentence_array = [
     "अंग्रेजीमा सिफारिस"
 ]
 
+# Load the Nepali sentence similarity model
+model_name = "l3cube-pune/indic-sentence-similarity-sbert"
+model = SentenceTransformer('l3cube-pune/indic-sentence-similarity-sbert')
+
+
 @app.route('/check_similarity', methods=['POST'])
 def check_similarity():
     try:
         #get data from form data
         voice_text = request.form['voice_text']
 
-        # Sample voice input (replace this with your actual voice-to-text conversion)
-        """ voice_text = "कस्तो सिफारिस गर्नुपर्छ अस्थायी बसोबासको?" """
+        query_embedding = model.encode(voice_text)
+        embeddings = model.encode(sentence_array)
 
-        # Tokenize the voice_text
-        voice_inputs = tokenizer(voice_text, return_tensors="pt")
+        scores = util.dot_score(query_embedding, embeddings)
 
-        # Get the model output (embedding)
-        model_output = model(**voice_inputs).pooler_output
+        print("Similarity:", scores)
+        max_value, max_index = torch.max(scores, dim=1)
 
-        # Calculate similarity scores
-        similarity_scores = []
-        for sentence in sentence_array:
-            sentence_inputs = tokenizer(sentence, return_tensors="pt")
-            sentence_output = model(**sentence_inputs).pooler_output
 
-            # You might want to use a different score if the model provides one
-            similarity_score = torch.nn.functional.cosine_similarity(model_output, sentence_output).item()
-            similarity_scores.append(similarity_score)
+        print("Max Value:", max_value)
+        print("Max Index:", max_index)
+        print("Sentence:", sentence_array[max_index])
+        
 
-        # Find the most similar sentence
-        max_similarity_index = similarity_scores.index(max(similarity_scores))
-        most_similar_sentence = sentence_array[max_similarity_index]
-
-        result = {
-            "voice_text": voice_text,
-            "most_similar_sentence": most_similar_sentence,
-            "max_similarity_index" : max_similarity_index,
-            "similarity_score": max(similarity_scores)
-        }
-
-        return jsonify(result)
+        return jsonify({"result": "success"}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
