@@ -86,9 +86,8 @@ def check_similarity():
         print("Max Value:", max_value)
         print("Max Index:", max_index)
         print("Sentence:", sentence_array[max_index])
-        
 
-        return jsonify({"result": "success"}), 200
+        return jsonify({"sentence": sentence_array[max_index], "score": max_value.item()}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
