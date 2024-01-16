@@ -60,8 +60,7 @@ sentence_array = [
     "अंग्रेजीमा सिफारिस"
 ]
 
-# Load the Nepali sentence similarity model
-model_name = "l3cube-pune/indic-sentence-similarity-sbert"
+# Load the sentence similarity model
 model = SentenceTransformer('l3cube-pune/indic-sentence-similarity-sbert')
 
 
@@ -73,16 +72,8 @@ def check_similarity():
 
         query_embedding = model.encode(voice_text)
         embeddings = model.encode(sentence_array)
-
         scores = util.dot_score(query_embedding, embeddings)
-
-        """ print("Similarity:", scores) """
         max_value, max_index = torch.max(scores, dim=1)
-
-
-        """ print("Max Value:", max_value)
-        print("Max Index:", max_index)
-        print("Sentence:", sentence_array[max_index]) """
 
         return jsonify({"sentence": sentence_array[max_index], "score": max_value.item()}), 200
 
