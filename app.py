@@ -2,9 +2,6 @@ from flask import Flask, request, jsonify
 from sentence_transformers import SentenceTransformer, util
 import torch
 
-
-
-
 app = Flask(__name__)
 
 sentence_array = [
@@ -79,18 +76,19 @@ def check_similarity():
 
         scores = util.dot_score(query_embedding, embeddings)
 
-        print("Similarity:", scores)
+        """ print("Similarity:", scores) """
         max_value, max_index = torch.max(scores, dim=1)
 
 
-        print("Max Value:", max_value)
+        """ print("Max Value:", max_value)
         print("Max Index:", max_index)
-        print("Sentence:", sentence_array[max_index])
+        print("Sentence:", sentence_array[max_index]) """
 
         return jsonify({"sentence": sentence_array[max_index], "score": max_value.item()}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+        
 
 if __name__ == '__main__':
     app.run(port=5000,debug=False)
